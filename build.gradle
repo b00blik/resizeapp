@@ -1,0 +1,28 @@
+buildscript {
+    repositories {
+        maven {
+            url "https://plugins.gradle.org/m2/"
+        }
+    }
+}
+
+apply plugin: 'scala'
+apply plugin: 'application'
+
+mainClassName = "ru.b00blik.resizeapp.ResizeForm"
+
+repositories {
+    jcenter()
+    mavenCentral()
+}
+
+jar {
+    enabled = false
+}
+
+dependencies{
+    compile group: 'com.sksamuel.scrimage', name: 'scrimage-core_2.12', version: '2.1.8'
+    compile group: 'com.sksamuel.scrimage', name: 'scrimage-filters_2.12', version: '2.1.8'
+    compile group: 'com.sksamuel.scrimage', name: 'scrimage-io-extra_2.12', version: '2.1.8'
+    compile group: 'org.scalafx', name: 'scalafx_2.12', version: '8.0.144-R12'
+}
