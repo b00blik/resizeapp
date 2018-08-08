@@ -10,75 +10,36 @@ import scalafx.scene.control.Alert.AlertType
 
 object ImageProcessor {
 
+  val PROC_ERROR = "Error of processing file"
+  val TYPE_ERROR = "Unknown type of file"
+
   def compress (toProcess: File ): Unit ={
     echoInputType(toProcess)
-    //TODO: add check to image type and selecting Writer
-    val pngWriter = PngWriter(9)
-    val jpgWriter = JpegWriter(75, true)
-
 
     if (toProcess.isDirectory) {
       for (file <- toProcess.listFiles()) {
-
-        val jpeg = isJPEG(file)
-        val png = isPNG(file)
-
-        val oldName = file.getAbsolutePath
-        val newName = insertSuffixCompressed(oldName)
-        echoPathProcessing(file)
-
-        if (jpeg == true)
-          Image.fromFile(file).forWriter(jpgWriter).write(newName)
-        else
-          Image.fromFile(file).forWriter(pngWriter).write(newName)
+        compressSingleFile(file)
       }
     } else {
-
-      val jpeg = isJPEG(toProcess)
-      val png = isPNG(toProcess)
-
-      val oldName = toProcess.getAbsolutePath
-      val newName = insertSuffixCompressed(oldName)
-      echoPathProcessing(toProcess)
-
-      if (jpeg == true)
-        Image.fromFile(toProcess).forWriter(jpgWriter).write(newName)
-      else
-        Image.fromFile(toProcess).forWriter(pngWriter).write(newName)
+      compressSingleFile(toProcess)
     }
-    new Alert(AlertType.Information,"Image compressing finished!").showAndWait()
   }
 
-  def resize (toProcess: File, scaleVal: Double): Unit ={
+  def resize (toProcess: File, scaleValue: Double): Unit ={
     echoPathProcessing(toProcess)
     echoInputType(toProcess)
 
-    val jpegWriter = JpegWriter().withCompression(75)
-    val pngWriter = new PngWriter(9)
-
     if (toProcess.isDirectory) {
       for (file <- toProcess.listFiles()) {
-        val oldName = file.getAbsolutePath
-        val newName = insertSuffixResized(oldName)
-        echoPathProcessing(file)
-
-        Image.fromFile(file).scale(scaleVal, ScaleMethod.BSpline).output(newName)
+        resizeSingleFile(file, scaleValue)
       }
     } else {
-      val oldName = toProcess.getAbsolutePath
-      val newName = insertSuffixResized(oldName)
-      echoPathProcessing(toProcess)
-
-      val jpeg = isJPEG(toProcess)
-      val png = isPNG(toProcess)
-
-      Image.fromFile(toProcess).scale(scaleVal, ScaleMethod.BSpline).output(newName)
+      resizeSingleFile(toProcess, scaleValue)
     }
-    new Alert(AlertType.Information,"Image processing finished!").showAndWait()
   }
 
   def echoPathProcessing(f: File): Unit = {
-    println("Processing file: " + f.getAbsolutePath.toString)
+    println("Processing file: " + f.getAbsolutePath)
   }
 
   def insertSuffixResized(oldName: String): Path = {
@@ -127,6 +88,77 @@ object ImageProcessor {
           return false
         }
     finally ins.close
+  }
+
+  def compressSingleFile(toProcess: File): Unit ={
+    val jpeg = isJPEG(toProcess)
+    val png = isPNG(toProcess)
+
+    val oldName = toProcess.getAbsolutePath
+    val newName = insertSuffixCompressed(oldName)
+    echoPathProcessing(toProcess)
+
+    try {
+      if (jpeg) {
+        compressSingleJpeg(toProcess, newName)
+      } else if (png) {
+        compressSinglePng(toProcess, newName)
+      } else {
+        showErrorAlert(TYPE_ERROR)
+      }
+    } catch {
+      case e: Exception => showErrorAlert(PROC_ERROR)
+    }
+  }
+
+  def compressSingleJpeg(toProcess: File, newName: Path): Unit ={
+    val jpgWriter = JpegWriter(75, true)
+    Image.fromFile(toProcess).forWriter(jpgWriter).write(newName)
+    new Alert(AlertType.Information,"Image processing finished!").showAndWait()
+  }
+
+  def compressSinglePng(toProcess: File, newName: Path): Unit ={
+    val pngWriter = PngWriter(9)
+    Image.fromFile(toProcess).forWriter(pngWriter).write(newName)
+    new Alert(AlertType.Information,"Image processing finished!").showAndWait()
+  }
+
+  def resizeSingleJpeg(toResize: File, compressionValue: Int, scaleVal: Double): Unit = {
+    val jpegWriter = JpegWriter().withCompression(75)
+    val oldName = toResize.getAbsolutePath
+    val newName = insertSuffixResized(oldName)
+    echoPathProcessing(toResize)
+    Image.fromFile(toResize).scale(scaleVal, ScaleMethod.BSpline).output(newName)(jpegWriter)
+    new Alert(AlertType.Information,"Image processing finished!").showAndWait()
+  }
+
+  def resizeSinglePng(toResize: File, compressionValue: Int, scaleVal: Double): Unit = {
+    val pngWriter = new PngWriter(9)
+    val oldName = toResize.getAbsolutePath
+    val newName = insertSuffixResized(oldName)
+    echoPathProcessing(toResize)
+    Image.fromFile(toResize).scale(scaleVal, ScaleMethod.BSpline).output(newName)(pngWriter)
+    new Alert(AlertType.Information,"Image processing finished!").showAndWait()
+  }
+
+  def resizeSingleFile(toResize: File, scaleVal: Double): Unit = {
+    val jpeg = isJPEG(toResize)
+    val png = isPNG(toResize)
+
+    try {
+      if (jpeg)
+        resizeSingleJpeg(toResize, 75, scaleVal)
+      else if (png)
+        resizeSinglePng(toResize, 9, scaleVal)
+      else
+        showErrorAlert(TYPE_ERROR)
+    } catch {
+      case e: Exception => showErrorAlert(PROC_ERROR)
+    }
+  }
+
+  def showErrorAlert(message: String): Unit ={
+    new Alert(AlertType.Error, message).showAndWait()
   }
 
 }

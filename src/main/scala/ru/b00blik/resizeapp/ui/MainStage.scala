@@ -10,7 +10,8 @@ import scalafx.application.JFXApp
 import scalafx.application.JFXApp.PrimaryStage
 import scalafx.geometry.{Insets, Pos}
 import scalafx.scene.Scene
-import scalafx.scene.control.{Button, Label, Slider}
+import scalafx.scene.control.Alert.AlertType
+import scalafx.scene.control.{Alert, Button, Label, Slider}
 import scalafx.scene.layout.{HBox, VBox}
 import scalafx.stage.{DirectoryChooser, FileChooser, Stage}
 
@@ -73,7 +74,6 @@ class MainStage extends PrimaryStage {
     val label = createLabel()
 
     val result = new HBox() {
-      //label
       alignment = Pos.Center
       padding = Insets(10)
       children = label
@@ -103,7 +103,12 @@ class MainStage extends PrimaryStage {
         },
         new Button(){
           text = "Minimize"
-          onAction = handle{ImageProcessor.resize(element.get, 0.5)}
+          onAction = handle{
+            if (element != None)
+              ImageProcessor.resize(element.get, 0.5)
+            else
+              showAlertToSelect()
+          }
         }
       )
     }
@@ -118,7 +123,12 @@ class MainStage extends PrimaryStage {
       children = Seq(
         new Button() {
           text = "Compress"
-          onAction = handle{ImageProcessor.compress(element.get)}
+          onAction = handle{
+            if (element != None)
+              ImageProcessor.compress(element.get)
+            else
+              showAlertToSelect()
+          }
         }
       )
     }
@@ -152,5 +162,9 @@ class MainStage extends PrimaryStage {
     return new Label {
         text = NOT_SELECTED
       }
-    }
+  }
+
+  def showAlertToSelect(): Unit ={
+    new Alert(AlertType.Error, "Please select file(s) to process!").showAndWait()
+  }
 }
