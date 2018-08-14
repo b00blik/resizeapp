@@ -28,6 +28,7 @@ object ImageProcessor {
   def resize (toProcess: File, scaleValue: Double): Unit ={
     echoPathProcessing(toProcess)
     echoInputType(toProcess)
+    println("Image scale rate is " + scaleValue)
 
     if (toProcess.isDirectory) {
       for (file <- toProcess.listFiles()) {

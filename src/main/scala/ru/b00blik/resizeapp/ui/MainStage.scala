@@ -26,7 +26,7 @@ class MainStage extends PrimaryStage {
     width = 600
     height = 350
     var labelHBox = createLabelBox()
-    var scaleHBox = createScaleBox()
+    var scaleVBox = createScaleBox()
     var compressHBox = createCompressBox()
     var selectbtHBox = createSelectBtBox()
 
@@ -34,7 +34,7 @@ class MainStage extends PrimaryStage {
       root = new VBox() {
         children = Seq(
           labelHBox,
-          scaleHBox,
+          scaleVBox,
           compressHBox,
           selectbtHBox
         )
@@ -91,26 +91,43 @@ class MainStage extends PrimaryStage {
     return result
   }
 
-  def createScaleBox():HBox = {
-    var result = new HBox() {
+  def createScaleBox():VBox = {
+    var result = new VBox() {
       //scale box
       alignment = Pos.Center
       padding = Insets(10)
-      children = Seq(
-        new Slider() {
-          max = 100
-          min = 1
-        },
-        new Button(){
-          text = "Minimize"
-          onAction = handle{
-            if (element != None)
-              ImageProcessor.resize(element.get, 0.5)
-            else
-              showAlertToSelect()
-          }
+
+      var scaleLabel = new Label {
+        text = "Select scale from 0 to 1"
+      }
+
+      var innerHbox = new HBox{
+        alignment = Pos.Center
+        var slider = new Slider() {
+          max = 1
+          min = 0.0
         }
+
+        children = Seq(
+          slider,
+          new Button(){
+            text = "Minimize"
+            onAction = handle{
+              if (element != None)
+                ImageProcessor.resize(element.get, slider.value())
+              else
+                showAlertToSelect()
+            }
+          }
+        )
+      }
+
+      children = Seq(
+        scaleLabel,
+        innerHbox
       )
+
+
     }
     return result
   }
