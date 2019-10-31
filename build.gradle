@@ -11,10 +11,13 @@ apply plugin: 'application'
 
 mainClassName = "ru.b00blik.resizeapp.ResizeForm"
 
+ScalaCompileOptions.metaClass.useAnt = false
+
 repositories {
     jcenter()
     mavenCentral()
 }
+
 
 jar {
     enabled = false

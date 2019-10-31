@@ -23,12 +23,12 @@ class MainStage extends PrimaryStage {
 
   stage = new JFXApp.PrimaryStage {
     title.value = "ResizeApp"
-    width = 600
+    width = 500
     height = 350
-    var labelHBox = createLabelBox()
-    var scaleVBox = createScaleBox()
-    var compressHBox = createCompressBox()
-    var selectbtHBox = createSelectBtBox()
+    var labelHBox: HBox = createLabelBox()
+    var scaleVBox: VBox = createScaleBox()
+    var compressHBox: HBox = createCompressBox()
+    var selectbtHBox: HBox = createSelectBtBox()
 
     scene = new Scene {
       root = new VBox() {
@@ -73,13 +73,13 @@ class MainStage extends PrimaryStage {
   def createLabelBox():HBox = {
     val label = createLabel()
 
-    val result = new HBox() {
+    val labelBox = new HBox() {
       alignment = Pos.Center
       padding = Insets(10)
       children = label
     }
 
-    result.handleEvent(PathChangedEvent.Any){
+    labelBox.handleEvent(PathChangedEvent.Any) {
       pe: PathChangedEvent => {
         if (this.element.get == null)
           label.setText(NOT_SELECTED)
@@ -88,30 +88,36 @@ class MainStage extends PrimaryStage {
       }
     }
 
-    return result
+    labelBox
   }
 
-  def createScaleBox():VBox = {
-    var result = new VBox() {
+  def createScaleBox(): VBox = {
+    var scaleBox = new VBox() {
       //scale box
       alignment = Pos.Center
       padding = Insets(10)
 
-      var scaleLabel = new Label {
-        text = "Select scale from 0 to 1"
+      var scaleLabel: Label = new Label {
+        text = "Select downscale ratio from 0 to 1"
       }
 
-      var innerHbox = new HBox{
+      var innerHbox: HBox = new HBox {
         alignment = Pos.Center
-        var slider = new Slider() {
+        var slider: Slider = new Slider() {
           max = 1
           min = 0.0
+          onMouseClicked = handle {
+            showAlertRatioChanged(slider.value())
+          }
         }
+
+        slider showTickMarks_= true
+        slider showTickLabels_= true
 
         children = Seq(
           slider,
           new Button(){
-            text = "Minimize"
+            text = "Downscale"
             onAction = handle{
               if (element != None)
                 ImageProcessor.resize(element.get, slider.value())
@@ -129,19 +135,19 @@ class MainStage extends PrimaryStage {
 
 
     }
-    return result
+    scaleBox
   }
 
-  def createCompressBox():HBox = {
-    var result = new HBox() {
+  def createCompressBox(): HBox = {
+    var compressBox = new HBox() {
       //compress box
       alignment = Pos.Center
       padding = Insets(10)
       children = Seq(
         new Button() {
           text = "Compress"
-          onAction = handle{
-            if (element != None)
+          onAction = handle {
+            if (element.isDefined)
               ImageProcessor.compress(element.get)
             else
               showAlertToSelect()
@@ -149,11 +155,11 @@ class MainStage extends PrimaryStage {
         }
       )
     }
-    return result
+    compressBox
   }
 
-  def createSelectBtBox():HBox = {
-    val result = new HBox() {
+  def createSelectBtBox(): HBox = {
+    val selectButtonBox = new HBox() {
       alignment = Pos.Center
       padding = Insets(10)
       spacing = 28
@@ -172,16 +178,20 @@ class MainStage extends PrimaryStage {
         }
       )
     }
-    return result
+    selectButtonBox
   }
 
   def createLabel() : Label = {
-    return new Label {
-        text = NOT_SELECTED
-      }
+    new Label {
+      text = NOT_SELECTED
+    }
   }
 
   def showAlertToSelect(): Unit ={
     new Alert(AlertType.Error, "Please select file(s) to process!").showAndWait()
+  }
+
+  def showAlertRatioChanged(value: Double): Unit ={
+    new Alert(AlertType.Information, "Ratio for downscale changed to: " + value).showAndWait()
   }
 }

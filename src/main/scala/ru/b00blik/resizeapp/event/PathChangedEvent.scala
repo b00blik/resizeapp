@@ -1,13 +1,11 @@
 package ru.b00blik.resizeapp.event
 
 import javafx.{event => jfxe}
-
-import _root_.ru.b00blik.resizeapp.event.JFXPathChangedEvent
-
-import scala.language.implicitConversions
 import scalafx.Includes._
 import scalafx.delegate.SFXDelegate
 import scalafx.event.{Event, EventType}
+
+import scala.language.implicitConversions
 
 
 class PathChangedEvent(override val delegate: JFXPathChangedEvent) extends Event(delegate) with SFXDelegate[JFXPathChangedEvent]{
